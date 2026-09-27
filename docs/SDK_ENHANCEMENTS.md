@@ -147,3 +147,49 @@ const value = unwrapSdkOperationResult(result);
 
 `EmployeeLifecycleClient` returns the same explicit result shape per operation,
 with destination validation performed locally before any network call.
+
+## Issue #532 — Settlement Receipt Validation Helper
+`validateSettlementReceipt()` in `packages/core/src/settlement/receipt.ts`
+validates settlement receipts produced after payroll finalization before they
+enter reconciliation, audit, or archival flows. It returns an explicit
+result instead of throwing: `{ ok: true, receiptId, displayReceiptId, state: 'validated' }`
+or `{ ok: false, code, message, state }` where `state` distinguishes
+`"invalid"` (well-formed but failing policy) from `"malformed"` (not a receipt
+object at all).
+
+Checks performed:
+- Receipt ID format (reuses the canonical settlement receipt ID rules),
+- Payroll identifier presence (and optional match against `expectedPayrollId`),
+- Settlement status against `allowedStatuses` (default `['settled', 'confirmed']`),
+- Transaction reference (`txHash` in string or structured form),
+- Metadata digest shape, plus content match when `metadata` is supplied.
+
+Privacy: rejected values are never reflected in messages, and
+`displayReceiptId` is redacted (e.g. `rcp***def`) so results are safe to log
+or render.
+
+### Usage
+```typescript
+import { validateSettlementReceipt, isSettlementReceiptValid } from '@zk-payroll/core';
+
+const result = validateSettlementReceipt(untrustedReceipt, {
+  expectedPayrollId: 'pr_run_2026_09',
+  metadata: payrollMetadata, // optional digest content check
+});
+
+if (result.ok) {
+  console.log('Validated', result.displayReceiptId); // redacted, safe to log
+} else {
+  console.error(result.code, result.message); // sanitized, no rejected values
+}
+
+// Or a plain predicate:
+if (isSettlementReceiptValid(receipt)) {
+  // proceed with reconciliation
+}
+```
+
+Also available on `PayrollService` (instance and static) as
+`validateSettlementReceipt(receipt, options?)`, and
+`extractSettlementReceiptTxHash(receipt)` returns the normalized on-chain
+transaction hash for reconciliation pipelines.
