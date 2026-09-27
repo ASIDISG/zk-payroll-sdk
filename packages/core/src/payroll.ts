@@ -34,6 +34,11 @@ import {
   type SafeBatchProgressStage,
   type SafeBatchErrorDetail,
 } from "./payroll/safeBatchSubmitter";
+import {
+  validateSettlementReceipt as validateSettlementReceiptHelper,
+  type SettlementReceiptValidation,
+  type SettlementReceiptValidationOptions,
+} from "./settlement/receipt";
 
 export {
   submitSequentialPayrollBatches,
@@ -458,5 +463,31 @@ export class PayrollService {
 
     this.logger?.info("handling_employer_updated_event", { employer: event.employer });
     await this.invalidateConfigurationCache(event.employer);
+  }
+
+  /**
+   * Validates a settlement receipt against the settlement workflow policy (#532).
+   *
+   * Lightweight operational gate for receipts produced after payroll finalization:
+   * checks receipt/payroll identifiers, settled status, transaction reference, and
+   * metadata digest shape — without echoing rejected values. Returns an explicit
+   * result instead of throwing; the display receipt ID inside the result is
+   * redacted, so it is safe for logs and UI feedback.
+   */
+  validateSettlementReceipt(
+    receipt: PayrollReceipt | unknown,
+    options?: SettlementReceiptValidationOptions
+  ): SettlementReceiptValidation {
+    return validateSettlementReceiptHelper(receipt, options);
+  }
+
+  /**
+   * Static helper: validates a settlement receipt (#532).
+   */
+  static validateSettlementReceipt(
+    receipt: PayrollReceipt | unknown,
+    options?: SettlementReceiptValidationOptions
+  ): SettlementReceiptValidation {
+    return validateSettlementReceiptHelper(receipt, options);
   }
 }

@@ -168,6 +168,13 @@ const bytes = encodePayrollRequest(request);
 const roundTripped = decodePayrollRequest(bytes);
 ```
 
+`validateSettlementReceipt()` validates settlement receipts produced after
+payroll finalization before they enter reconciliation or archival flows. It
+checks the receipt and payroll identifiers, settled status, transaction
+reference, and metadata digest — returning an explicit result with a stable
+error code and a sanitized, actionable message that never echoes rejected
+values. The display receipt ID in the result is redacted for safe logging.
+
 ## Explicit Operation Result Types
 
 Instead of relying on thrown exceptions alone, `runSdkOperation()` returns an

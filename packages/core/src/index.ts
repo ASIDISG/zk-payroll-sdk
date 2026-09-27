@@ -289,3 +289,6 @@ export * from "./compliance";
 
 // ── Payroll Request Builder ───────────────────────────────────────────────
 export * from "./request";
+
+// ── Settlement Receipt Validation (#532) ────────────────────────────────────
+export * from "./settlement";
