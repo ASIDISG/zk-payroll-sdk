@@ -90,6 +90,7 @@ export const PayrollServiceErrorCode = {
   INVALID_RECIPIENT: "2002",
   INVALID_AMOUNT: "2003",
   INVALID_ASSET: "2004",
+  UNKNOWN_ERROR: "2099",
 } as const;
 
 export type PayrollServiceErrorCode =

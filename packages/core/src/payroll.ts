@@ -427,7 +427,7 @@ export class PayrollService {
    */
   async invalidateConfigurationCache(employerAddress?: string): Promise<void> {
     if (!this.cache) {
-      this.logger?.debug("invalidateConfigurationCache called but no cache adapter is configured.");
+      this.logger?.info("invalidateConfigurationCache called but no cache adapter is configured.");
       return;
     }
 

@@ -15,9 +15,13 @@ describe("pollPayrollCompletion (Issue #477)", () => {
   it("resolves immediately when the payroll is already complete", async () => {
     const getStatus = jest.fn().mockResolvedValue({ status: "executed" });
 
-    const result = await pollPayrollCompletion(getStatus, (v) => v.status === "executed", {
-      intervalMs: 5,
-    });
+    const result = await pollPayrollCompletion(
+      getStatus,
+      (v) => (v as { status: string }).status === "executed",
+      {
+        intervalMs: 5,
+      }
+    );
 
     expect(result.value).toEqual({ status: "executed" });
     expect(result.attempts).toBe(1);
@@ -30,11 +34,15 @@ describe("pollPayrollCompletion (Issue #477)", () => {
     const getStatus = jest.fn().mockImplementation(() => Promise.resolve(states.shift()));
     const seen: Array<[number, unknown]> = [];
 
-    const result = await pollPayrollCompletion(getStatus, (v) => v.status === "executed", {
-      intervalMs: 5,
-      timeoutMs: 1000,
-      onAttempt: (attempt, value) => seen.push([attempt, value]),
-    });
+    const result = await pollPayrollCompletion(
+      getStatus,
+      (v) => (v as { status: string }).status === "executed",
+      {
+        intervalMs: 5,
+        timeoutMs: 1000,
+        onAttempt: (attempt, value) => seen.push([attempt, value]),
+      }
+    );
 
     expect(result.value).toEqual({ status: "executed" });
     expect(result.attempts).toBe(3);

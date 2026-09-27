@@ -126,7 +126,10 @@ export function normalizeSdkLogger(input: SdkLoggerInput): SdkLogger {
     if (input instanceof EventEmitter) {
       return input as SdkLogger;
     }
-    const source = input;
+    // `input instanceof EventEmitter` narrows `SdkLogger` to `never` in the
+    // negative branch (SdkLogger extends EventEmitter), so re-widen to the
+    // minimal logger shape that bare { info, warn, error } objects satisfy.
+    const source = input as Pick<SdkLogger, "info" | "warn" | "error">;
     const emitter = new EventEmitter() as SdkLogger;
     emitter.info = (event, context) => {
       source.info(event, context === undefined ? undefined : redactSensitive(context));
